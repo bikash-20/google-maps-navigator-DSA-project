@@ -9,7 +9,7 @@
 
 using namespace std;
 
-// ─── Color palette (Google Maps style) ───────────────────────────────────────
+
 #define COL_BG        CLITERAL(Color){232,224,216,255}   // tan map background
 #define COL_PARK      CLITERAL(Color){200,230,192,255}   // green park
 #define COL_WATER     CLITERAL(Color){170,218,255,255}   // light blue water
@@ -30,20 +30,19 @@ using namespace std;
 #define COL_MUTED     CLITERAL(Color){128,134,139,255}   // muted text
 #define COL_BLUE_TXT  CLITERAL(Color){ 26,115,232,255}   // Google blue text
 
-// ─── Data structures ──────────────────────────────────────────────────────────
+
 struct Edge { string dest; int dist; };
 
 struct Node {
     string name;
-    Vector2 pos;   // screen position (set after layout)
-    float rawX, rawY; // design-space coords
+    Vector2 pos;   
+    float rawX, rawY; 
 };
 
 struct Park  { float x,y,w,h; };
 struct Water { float x,y,w,h; };
 struct Block { float x,y,w,h; };
 
-// ─── Navigation system ────────────────────────────────────────────────────────
 class NavSystem {
 public:
     unordered_map<string,Node> nodes;
@@ -57,7 +56,6 @@ public:
         graph[b].push_back({a,d});
     }
 
-    // Lay out nodes to fill [padL..W-padR] x [padT..H-padB]
     void layout(float W, float H,
                 float padL=310, float padR=30,
                 float padT=60,  float padB=60){
@@ -73,7 +71,7 @@ public:
         }
     }
 
-    // Dijkstra
+    
     vector<string> findPath(const string& start, const string& end){
         unordered_map<string,double> dist;
         unordered_map<string,string> prev;
@@ -118,7 +116,6 @@ public:
     }
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 void DrawRoundRect(float x,float y,float w,float h,float r,Color c){
     DrawRectangleRounded({x,y,w,h},r/(min(w,h)*0.5f),8,c);
 }
@@ -129,7 +126,6 @@ void DrawRoundRectLines(float x,float y,float w,float h,float r,float thick,Colo
 float Vec2Len(Vector2 v){ return sqrtf(v.x*v.x+v.y*v.y); }
 Vector2 Vec2Norm(Vector2 v){ float l=Vec2Len(v); return l>0?Vector2{v.x/l,v.y/l}:Vector2{0,0}; }
 
-// Draw dashed line
 void DrawDashedLine(Vector2 a, Vector2 b, float thick, float dashLen, float gapLen, Color c){
     Vector2 dir=Vec2Norm({b.x-a.x,b.y-a.y});
     float total=Vec2Len({b.x-a.x,b.y-a.y});
@@ -147,9 +143,6 @@ void DrawDashedLine(Vector2 a, Vector2 b, float thick, float dashLen, float gapL
     }
 }
 
-// ─── Map decorations ──────────────────────────────────────────────────────────
-// We define parks, water bodies and building blocks in raw design space,
-// then scale them the same way nodes are scaled.
 struct MapDeco {
     vector<Park>  parks;
     vector<Water> waters;
@@ -177,14 +170,12 @@ MapDeco buildDeco(){
     };
     return d;
 }
-
-// Transform a raw deco rect to screen space using the same mapping as nodes
 Rectangle decoToScreen(float rx,float ry,float rw,float rh,
                        float mnx,float mny,float sc,float offX,float offY){
     return {offX+(rx-mnx)*sc, offY+(ry-mny)*sc, rw*sc, rh*sc};
 }
 
-// ─── Build the city graph ────────────────────────────────────────────────────
+
 void buildCity(NavSystem& nav){
     nav.addNode("Northgate",  320, 60);
     nav.addNode("Westfield",  100,160);
@@ -235,21 +226,19 @@ void buildCity(NavSystem& nav){
     nav.addRoute("Beachfront","Terminal",7);
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+
 int main(){
 
     const int SW = 1200, SH = 720;
     InitWindow(SW, SH, "Google Maps — Dijkstra Navigation");
     SetTargetFPS(60);
 
-    // ── Font (use default; raylib default is clean enough) ──
     Font font = GetFontDefault();
 
     NavSystem nav;
     buildCity(nav);
     nav.layout((float)SW,(float)SH);
 
-    // Compute raw extents for deco scaling (same as layout())
     float mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
     for(auto&[k,n]:nav.nodes){
         mnx=min(mnx,n.rawX); mxx=max(mxx,n.rawX);
@@ -267,14 +256,12 @@ int main(){
     string endNode   = "Airport";
     vector<string> path = nav.findPath(startNode, endNode);
 
-    // Car animation state
     int    carSeg  = 0;
     float  carFrac = 0.0f;
-    float  carSpeedPx = 80.0f; // pixels/sec
+    float  carSpeedPx = 80.0f; 
 
-    float dashTimer = 0.0f; // for animated dash offset
+    float dashTimer = 0.0f; 
 
-    // ── Sidebar ──
     const float SB_X=0, SB_W=298, SB_H=(float)SH;
 
     while(!WindowShouldClose()){
@@ -282,7 +269,6 @@ int main(){
         float dt = GetFrameTime();
         dashTimer += dt * 40.0f;
 
-        // ── Input ──────────────────────────────────────────────────
         Vector2 mp = GetMousePosition();
 
         auto hitNode = [&]() -> string {
@@ -310,7 +296,6 @@ int main(){
             }
         }
 
-        // ── Car movement ──────────────────────────────────────────
         if((int)path.size()>=2 && carSeg < (int)path.size()-1){
             Vector2 a = nav.nodes[path[carSeg]].pos;
             Vector2 b = nav.nodes[path[carSeg+1]].pos;
@@ -325,31 +310,25 @@ int main(){
             }
         }
 
-        // ── Draw ──────────────────────────────────────────────────
         BeginDrawing();
         ClearBackground(COL_BG);
 
-        // ── Map area (right of sidebar) ──
-
-        // Parks
         for(auto&p:deco.parks){
             Rectangle r=decoToScreen(p.x,p.y,p.w,p.h,mnx,mny,sc,offX,offY);
             DrawRectangleRec(r, COL_PARK);
             DrawRectangleLinesEx(r, 1, CLITERAL(Color){170,210,160,255});
         }
-        // Water
+    
         for(auto&w:deco.waters){
             Rectangle r=decoToScreen(w.x,w.y,w.w,w.h,mnx,mny,sc,offX,offY);
             DrawRectangleRec(r, COL_WATER);
         }
-        // Building blocks
+      
         for(auto&b:deco.blocks){
             Rectangle r=decoToScreen(b.x,b.y,b.w,b.h,mnx,mny,sc,offX,offY);
             DrawRectangleRec(r, COL_BUILDING);
         }
 
-        // ── Roads (all edges) ──
-        // Draw twice: thick stroke then thinner fill
         for(auto&[src,edges]:nav.graph){
             for(auto&e:edges){
                 Vector2 a=nav.nodes[src].pos;
@@ -360,10 +339,9 @@ int main(){
             }
         }
 
-        // Distance labels on major roads
         for(auto&[src,edges]:nav.graph){
             for(auto&e:edges){
-                if(e.dist>=8 && src<e.dest){ // only once per edge
+                if(e.dist>=8 && src<e.dest){ 
                     Vector2 a=nav.nodes[src].pos;
                     Vector2 b=nav.nodes[e.dest].pos;
                     Vector2 mid={(a.x+b.x)/2,(a.y+b.y)/2};
@@ -376,19 +354,18 @@ int main(){
             }
         }
 
-        // ── Path highlight ──
+    
         if((int)path.size()>=2){
-            // Blue thick path
+         
             for(int i=0;i+1<(int)path.size();i++){
                 Vector2 a=nav.nodes[path[i]].pos;
                 Vector2 b=nav.nodes[path[i+1]].pos;
                 DrawLineEx(a,b,9.0f,COL_PATH);
             }
-            // Animated dashed white overlay
+          
             for(int i=0;i+1<(int)path.size();i++){
                 Vector2 a=nav.nodes[path[i]].pos;
                 Vector2 b=nav.nodes[path[i+1]].pos;
-                // offset dashes by dashTimer for animation
                 Vector2 dir=Vec2Norm({b.x-a.x,b.y-a.y});
                 float total=Vec2Len({b.x-a.x,b.y-a.y});
                 float dashLen=12,gapLen=10,stride=dashLen+gapLen;
@@ -407,7 +384,6 @@ int main(){
             }
         }
 
-        // ── Nodes ──
         for(auto&[name,node]:nav.nodes){
             bool isStart = name==startNode;
             bool isEnd   = name==endNode;
@@ -422,20 +398,16 @@ int main(){
                            onPath  ? CLITERAL(Color){40,100,200,255} :
                            COL_NODE_STR;
 
-            // Shadow
+            
             DrawCircleV({node.pos.x+2,node.pos.y+2},r+1,
                         CLITERAL(Color){0,0,0,40});
             DrawCircleV(node.pos,r,fill);
             DrawCircleLines((int)node.pos.x,(int)node.pos.y,(int)r,stroke);
 
-            // White inner dot for start/end
             if(isStart||isEnd)
                 DrawCircleV(node.pos,4.0f,WHITE);
-
-            // Label
             int fs=11;
             int tw=MeasureText(name.c_str(),fs);
-            // background pill
             DrawRectangle((int)node.pos.x-tw/2-3,
                           (int)node.pos.y-(int)r-18,
                           tw+6,15,
@@ -446,21 +418,16 @@ int main(){
                      fs, COL_LABEL);
         }
 
-        // ── Car ──
         if((int)path.size()>=2 && carSeg<(int)path.size()-1){
             Vector2 a=nav.nodes[path[carSeg]].pos;
             Vector2 b=nav.nodes[path[carSeg+1]].pos;
             Vector2 carPos={a.x+(b.x-a.x)*carFrac, a.y+(b.y-a.y)*carFrac};
             float angle=atan2f(b.y-a.y,b.x-a.x);
 
-            // Shadow
             DrawCircleV({carPos.x+2,carPos.y+2},10,CLITERAL(Color){0,0,0,60});
-            // Yellow dot
             DrawCircleV(carPos,10,COL_CAR);
             DrawCircleLines((int)carPos.x,(int)carPos.y,10,
                             CLITERAL(Color){210,155,0,255});
-            // Arrow inside
-            // Draw a small triangle pointing in direction of travel
             float ax=carPos.x+cosf(angle)*6;
             float ay=carPos.y+sinf(angle)*6;
             float bx=carPos.x+cosf(angle+2.3f)*5;
@@ -471,20 +438,11 @@ int main(){
                          CLITERAL(Color){100,60,0,220});
         }
 
-        // ── Sidebar ──────────────────────────────────────────────
-
-        // Shadow
         DrawRectangle((int)SB_X+3,0,(int)SB_W,SH,CLITERAL(Color){0,0,0,30});
-        // Body
         DrawRectangle((int)SB_X,0,(int)SB_W,SH,COL_SIDEBAR);
-        // Right border
         DrawLine((int)SB_W,0,(int)SB_W,SH,CLITERAL(Color){220,220,220,255});
-
-        // ── Search bar area ──
         DrawRectangle(0,0,(int)SB_W,64,WHITE);
         DrawLine(0,64,(int)SB_W,64,CLITERAL(Color){230,230,230,255});
-
-        // Red pin icon (simple)
         DrawCircleV({24,24},8,COL_END);
         DrawCircleV({24,24},4,WHITE);
         DrawTriangle({19,30},{29,30},{24,38},COL_END);
@@ -495,13 +453,10 @@ int main(){
                  10, 42, 10, COL_MUTED);
 
         int y = 80;
-
-        // ── Route info ──
         if((int)path.size()>=2){
             int totalKm = nav.routeDist(path);
             int mins    = totalKm*2 + (int)path.size();
 
-            // Blue header: distance & time
             DrawRectangle(0,y,SB_W,50,CLITERAL(Color){232,240,253,255});
             DrawLine(0,y+50,SB_W,y+50,CLITERAL(Color){200,220,250,255});
 
@@ -509,24 +464,17 @@ int main(){
             DrawText(distStr.c_str(),14,y+8,16,COL_BLUE_TXT);
             DrawText("Fastest route",14,y+30,11,COL_MUTED);
             y+=60;
-
-            // Stats pills
             string stopStr=to_string((int)path.size()-2)+" stops";
             string timeStr=to_string(mins)+" min";
 
-            // stops pill
             DrawRoundRect(12,y,90,24,12,CLITERAL(Color){241,243,244,255});
             DrawText(stopStr.c_str(),22,y+6,11,COL_LABEL);
-            // time pill
             DrawRoundRect(110,y,80,24,12,CLITERAL(Color){241,243,244,255});
             DrawText(timeStr.c_str(),120,y+6,11,COL_LABEL);
             y+=40;
 
-            // Divider
             DrawLine(14,y,SB_W-14,y,CLITERAL(Color){230,230,230,255});
             y+=12;
-
-            // Turn-by-turn list
             DrawText("Turn-by-turn",14,y,12,COL_MUTED);
             y+=20;
 
@@ -535,7 +483,6 @@ int main(){
                 bool isS=(i==0), isE=(i==(int)path.size()-1);
                 bool isActive=(carSeg==i && (int)path.size()>=2);
 
-                // Highlight active step
                 if(isActive)
                     DrawRectangle(0,y-2,SB_W,36,
                                   CLITERAL(Color){232,240,253,255});
@@ -544,15 +491,10 @@ int main(){
                 Color dotC = isS?COL_START : isE?COL_END : COL_ONPATH;
                 DrawCircleV({20,(float)y+14},isS||isE?7.0f:5.0f,dotC);
                 if(isS||isE) DrawCircleV({20,(float)y+14},3,WHITE);
-
-                // Vertical connector line
                 if(i<visibleSteps-1)
                     DrawLine(20,y+21,20,y+38,CLITERAL(Color){200,210,230,255});
 
-                // Name
                 DrawText(path[i].c_str(),34,y+7,13,COL_LABEL);
-
-                // km to next
                 if(i+1<(int)path.size()){
                     int segD=nav.segDist(path[i],path[i+1]);
                     string segStr=to_string(segD)+" km";
@@ -565,11 +507,9 @@ int main(){
             DrawText("No path found",14,y,13,CLITERAL(Color){200,60,60,255});
         }
 
-        // ── Map attribution ──
         DrawText("Map data (c) 2025  |  Dijkstra routing",
                  SW-310, SH-18, 10, COL_MUTED);
 
-        // ── Zoom hint (bottom-right) ──
         DrawRectangle(SW-44,SH-90,32,80,WHITE);
         DrawRectangleLinesEx({(float)SW-44,(float)SH-90,32,80},1,
                              CLITERAL(Color){200,200,200,255});
