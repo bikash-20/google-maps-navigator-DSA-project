@@ -8,27 +8,25 @@
 #include <sstream>
 
 using namespace std;
-
-
-#define COL_BG        CLITERAL(Color){232,224,216,255}   // tan map background
-#define COL_PARK      CLITERAL(Color){200,230,192,255}   // green park
-#define COL_WATER     CLITERAL(Color){170,218,255,255}   // light blue water
-#define COL_BUILDING  CLITERAL(Color){220,213,200,255}   // beige block
-#define COL_ROAD_MAJ  CLITERAL(Color){255,255,255,255}   // white major road
-#define COL_ROAD_MIN  CLITERAL(Color){245,241,236,255}   // off-white minor road
-#define COL_ROAD_STR  CLITERAL(Color){200,193,180,255}   // road outline/stroke
-#define COL_PATH      CLITERAL(Color){ 66,133,244,255}   // Google blue path
-#define COL_PATH_DASH CLITERAL(Color){255,255,255,180}   // dashed overlay
-#define COL_NODE      CLITERAL(Color){255,255,255,255}   // default node fill
-#define COL_NODE_STR  CLITERAL(Color){170,170,170,255}   // default node stroke
-#define COL_START     CLITERAL(Color){ 52,168, 83,255}   // green start pin
-#define COL_END       CLITERAL(Color){234, 67, 53,255}   // red end pin
-#define COL_ONPATH    CLITERAL(Color){ 66,133,244,255}   // blue on-path node
-#define COL_CAR       CLITERAL(Color){251,188,  4,255}   // yellow car dot
-#define COL_SIDEBAR   CLITERAL(Color){255,255,255,255}   // sidebar bg
-#define COL_LABEL     CLITERAL(Color){ 50, 50, 50,255}   // node label text
-#define COL_MUTED     CLITERAL(Color){128,134,139,255}   // muted text
-#define COL_BLUE_TXT  CLITERAL(Color){ 26,115,232,255}   // Google blue text
+#define COL_BG        CLITERAL(Color){232,224,216,255}   
+#define COL_PARK      CLITERAL(Color){200,230,192,255}   
+#define COL_WATER     CLITERAL(Color){170,218,255,255}   
+#define COL_BUILDING  CLITERAL(Color){220,213,200,255}   
+#define COL_ROAD_MAJ  CLITERAL(Color){255,255,255,255}   
+#define COL_ROAD_MIN  CLITERAL(Color){245,241,236,255}   
+#define COL_ROAD_STR  CLITERAL(Color){200,193,180,255}   
+#define COL_PATH      CLITERAL(Color){ 66,133,244,255}   
+#define COL_PATH_DASH CLITERAL(Color){255,255,255,180}   
+#define COL_NODE      CLITERAL(Color){255,255,255,255}   
+#define COL_NODE_STR  CLITERAL(Color){170,170,170,255}   
+#define COL_START     CLITERAL(Color){ 52,168, 83,255}   
+#define COL_END       CLITERAL(Color){234, 67, 53,255}   
+#define COL_ONPATH    CLITERAL(Color){ 66,133,244,255}   
+#define COL_CAR       CLITERAL(Color){251,188,  4,255}   
+#define COL_SIDEBAR   CLITERAL(Color){255,255,255,255}   
+#define COL_LABEL     CLITERAL(Color){ 50, 50, 50,255}   
+#define COL_MUTED     CLITERAL(Color){128,134,139,255}   
+#define COL_BLUE_TXT  CLITERAL(Color){ 26,115,232,255}   
 
 
 struct Edge { string dest; int dist; };
